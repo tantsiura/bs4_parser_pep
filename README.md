@@ -48,7 +48,7 @@ python3 -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-## Описание команд
+## Описание команд парсера
 Вывод справочной информации:
 ```
 python main.py pep -h
@@ -69,4 +69,4 @@ python main.py latest-versions -o pretty
 python main.py whats-new
 ```
 
-Автор: [MrGorkiy](https://github.com/tantsiura)
+Автор: [tantsiura](https://github.com/tantsiura)
