@@ -114,7 +114,9 @@ def pep(session):
     delayed_logger = DelayedLogger()
 
     soup = get_soup(session, MAIN_PEP_URL)
-    tds = soup.find(id='pep-content').find_all('tbody').find_all('abbr').parent.find_next_sibling()
+    tds = soup.find(
+        id='pep-content'
+    ).find_all('tbody').find_all('abbr').parent.find_next_sibling()
 
     for td in tds:
         status_in_table = td.abbr.text[1:]
@@ -124,17 +126,25 @@ def pep(session):
         try:
             soup = get_soup(session, pep_url)
         except ConnectionError:
-            delayed_logger.add_message(GET_RESPONSE_LOG_ERROR.format(url=pep_url))
+            delayed_logger.add_message(
+                GET_RESPONSE_LOG_ERROR.format(url=pep_url)
+            )
             continue
 
-        info = BeautifulSoupTagFinder(find_tag(soup, 'section', {'id': 'pep-content'}))
+        info = BeautifulSoupTagFinder(
+            find_tag(soup, 'section', {'id': 'pep-content'})
+        )
         info_table = info.find_by_tag_attr('class', 'rfc2822 field-list simple')
-        status_text_tag = info_table.find_by_tag_attr(string=re.compile('Status')).parent
+        status_text_tag = info_table.find_by_tag_attr(
+            string=re.compile('Status')
+        ).parent
         status_on_exact_page = status_text_tag.find_next_sibling().text
         pep_statuses_dict[status_on_exact_page] += 1
 
         if status_on_exact_page not in EXPECTED_STATUS[status_in_table]:
-            delayed_logger.add_message(f'Несовпадающие статусы: {pep_url} Статус в карточке: {status_on_exact_page}')
+            delayed_logger.add_message(
+                f'Несовпадающие статусы: {pep_url} Статус в карточке: {status_on_exact_page}'
+            )
 
     delayed_logger.log(logging.warning)
     
