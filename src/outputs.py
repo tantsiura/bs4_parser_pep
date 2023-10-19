@@ -4,8 +4,9 @@ import logging
 
 from prettytable import PrettyTable
 
-from constants import DATETIME_FORMAT, RESULTS_DIR
+from constants import DATETIME_FORMAT, BASE_DIR
 
+RESULTS_DIR = BASE_DIR / 'results'
 
 def control_output(results, cli_args):
     '''Контроль вывода результатов парсинга.'''

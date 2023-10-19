@@ -6,10 +6,11 @@ import requests_cache
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import DOWNLOADS_DIR, EXPECTED_STATUS, MAIN_DOC_URL, PEP_URL
+from constants import BASE_DIR, EXPECTED_STATUS, MAIN_DOC_URL, PEP_URL
 from outputs import control_output
 from utils import find_tag, get_soup
 
+DOWNLOADS_DIR = BASE_DIR / 'downloads'
 
 def whats_new(session):
     '''Парсер информации из статей о нововведениях в Python.'''
