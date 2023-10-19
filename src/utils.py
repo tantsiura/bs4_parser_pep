@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import logging
 from requests import RequestException
 
 from exceptions import ParserFindTagException
@@ -9,7 +10,7 @@ ELEMENTS_NOT_FOUND_LOG_ERROR = 'Не найдены элементы по зап
 
 
 class DelayedLogger:
-    '''Класс для отложного логирования пойманных ошибок.'''
+    """Класс для отложного логирования пойманных ошибок."""
 
     def __init__(self):
         self.__messages = []
@@ -34,10 +35,11 @@ def get_response(session, url):
 
 
 def get_soup(session, url, features='lxml'):
-    return BeautifulSoup(
-        get_response(session, url).text,
-        features=features
-    )
+    response = get_response(session, url)
+    if response is not None:
+        return BeautifulSoup(response.text, features=features)
+    else:
+        logging.error('get_soup returned None for URL: %s' % url)
 
 
 def find_tag(soup, tag, attrs=None):

@@ -2,6 +2,7 @@ import logging
 import re
 from collections import defaultdict
 from urllib.parse import urljoin
+from bs4 import BeautifulSoupTagFinder
 
 import requests_cache
 from tqdm import tqdm
@@ -85,10 +86,7 @@ def latest_versions(session):
 
 
 def download(session):
-    downloads_url = urljoin(
-        MAIN_DOC_URL,
-        'download.html'
-    )
+    downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     archive_url = urljoin(
         downloads_url,
         select_elements(
@@ -102,52 +100,44 @@ def download(session):
     downloads_dir.mkdir(exist_ok=True)
     archive_path = downloads_dir / filename
     response = session.get(archive_url)
-    with open(archive_path, 'wb') as file:
-        file.write(response.content)
-    logging.info(
-        DOWNLOAD_LOG_INFO.format(archive_path=archive_path)
-    )
+    if response is not None:
+        response = session.get(archive_url)
+        with open(archive_path, 'wb') as file:
+            file.write(response.content)
+        logging.info(DOWNLOAD_LOG_INFO.format(archive_path=archive_path))
+    else:
+        logging.error('get_response returned None for URL: %s' % archive_url)
 
 
 def pep(session):
     pep_statuses_dict = defaultdict(int)
     delayed_logger = DelayedLogger()
-    for tbody in tqdm(
-        get_soup(session, MAIN_PEP_URL).find(
-            id='pep-content'
-        ).find_all('tbody')
-    ):
-        abbr_tags = tbody.find_all('abbr')
-        for abbr in abbr_tags:
-            status_in_table = abbr.text[1:]
-            next_td = abbr.parent.find_next_sibling()
-            pep_link = find_tag(next_td, 'a').get('href')
-            pep_url = urljoin(MAIN_PEP_URL, pep_link)
-            try:
-                soup = get_soup(session, pep_url)
-            except ConnectionError:
-                delayed_logger.add_message(
-                    GET_RESPONSE_LOG_ERROR.format(url=pep_url)
-                )
-                continue
-            info = find_tag(
-                soup, 'section', {'id': 'pep-content'}
-            )
-            info_table = info.find(
-                class_='rfc2822 field-list simple'
-            )
-            status_text_tag = info_table.find(
-                string=re.compile('Status')
-            ).parent
-            status_on_exact_page = status_text_tag.find_next_sibling().text
-            pep_statuses_dict[status_on_exact_page] += 1
-            if status_on_exact_page not in EXPECTED_STATUS[status_in_table]:
-                delayed_logger.add_message(
-                    f'Несовпадающие статусы: '
-                    f'{pep_url} '
-                    f'Статус в карточке: {status_on_exact_page}'
-                )
+
+    soup = get_soup(session, MAIN_PEP_URL)
+    tds = soup.find(id='pep-content').find_all('tbody').find_all('abbr').parent.find_next_sibling()
+
+    for td in tds:
+        status_in_table = td.abbr.text[1:]
+        pep_link = td.find('a').get('href')
+        pep_url = urljoin(MAIN_PEP_URL, pep_link)
+
+        try:
+            soup = get_soup(session, pep_url)
+        except ConnectionError:
+            delayed_logger.add_message(GET_RESPONSE_LOG_ERROR.format(url=pep_url))
+            continue
+
+        info = BeautifulSoupTagFinder(find_tag(soup, 'section', {'id': 'pep-content'}))
+        info_table = info.find_by_tag_attr('class', 'rfc2822 field-list simple')
+        status_text_tag = info_table.find_by_tag_attr(string=re.compile('Status')).parent
+        status_on_exact_page = status_text_tag.find_next_sibling().text
+        pep_statuses_dict[status_on_exact_page] += 1
+
+        if status_on_exact_page not in EXPECTED_STATUS[status_in_table]:
+            delayed_logger.add_message(f'Несовпадающие статусы: {pep_url} Статус в карточке: {status_on_exact_page}')
+
     delayed_logger.log(logging.warning)
+    
     return [
         ('Статус', 'Количество'),
         *pep_statuses_dict.items(),
