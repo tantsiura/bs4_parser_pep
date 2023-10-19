@@ -1,3 +1,4 @@
+import os
 import csv
 import datetime as dt
 import logging
@@ -37,7 +38,7 @@ def pretty_output(results):
 
 def file_output(results, cli_args):
     '''Создание директории и запись данных в файл.'''
-    RESULTS_DIR.mkdir(exist_ok=True)
+    os.makedirs('results', exist_ok=True)
     parser_mode = cli_args.mode
     now = dt.datetime.now()
     now_formatted = now.strftime(DATETIME_FORMAT)
