@@ -146,7 +146,8 @@ def pep(session):
         if status_on_exact_page not in EXPECTED_STATUS[status_in_table]:
             delayed_logger.add_message(
                 f'''
-                Несовпадающие статусы: {pep_url} Статус в карточке: {status_on_exact_page}
+                Несовпадающие статусы: {pep_url}
+                Статус в карточке: {status_on_exact_page}
                 '''
             )
 
