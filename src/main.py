@@ -12,6 +12,7 @@ from utils import find_tag, get_soup
 
 DOWNLOADS_DIR = BASE_DIR / 'downloads'
 
+
 def whats_new(session):
     '''Парсер информации из статей о нововведениях в Python.'''
     whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
