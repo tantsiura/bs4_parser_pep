@@ -2,7 +2,7 @@ import logging
 import re
 from collections import defaultdict
 from urllib.parse import urljoin
-from bs4 import BeautifulSoupTagFinder
+from beautifulsoup4 import BeautifulSoupTagFinder
 
 import requests_cache
 from tqdm import tqdm
