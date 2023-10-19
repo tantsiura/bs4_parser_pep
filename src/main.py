@@ -134,7 +134,9 @@ def pep(session):
         info = BeautifulSoupTagFinder(
             find_tag(soup, 'section', {'id': 'pep-content'})
         )
-        info_table = info.find_by_tag_attr('class', 'rfc2822 field-list simple')
+        info_table = info.find_by_tag_attr(
+            'class', 'rfc2822 field-list simple'
+        )
         status_text_tag = info_table.find_by_tag_attr(
             string=re.compile('Status')
         ).parent
@@ -143,11 +145,13 @@ def pep(session):
 
         if status_on_exact_page not in EXPECTED_STATUS[status_in_table]:
             delayed_logger.add_message(
-                f'Несовпадающие статусы: {pep_url} Статус в карточке: {status_on_exact_page}'
+                f'''
+                Несовпадающие статусы: {pep_url} Статус в карточке: {status_on_exact_page}
+                '''
             )
 
     delayed_logger.log(logging.warning)
-    
+
     return [
         ('Статус', 'Количество'),
         *pep_statuses_dict.items(),
