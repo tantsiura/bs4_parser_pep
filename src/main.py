@@ -2,7 +2,7 @@ import logging
 import re
 from collections import defaultdict
 from urllib.parse import urljoin
-from beautifulsoup4 import BeautifulSoupTagFinder
+from bs4 import BeautifulSoup
 
 import requests_cache
 from tqdm import tqdm
@@ -131,7 +131,7 @@ def pep(session):
             )
             continue
 
-        info = BeautifulSoupTagFinder(
+        info = BeautifulSoup(
             find_tag(soup, 'section', {'id': 'pep-content'})
         )
         info_table = info.find_by_tag_attr(
