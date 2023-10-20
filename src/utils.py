@@ -38,8 +38,7 @@ def get_soup(session, url, features='lxml'):
     response = get_response(session, url)
     if response is not None:
         return BeautifulSoup(response.text, features=features)
-    else:
-        logging.error('get_soup returned None for URL: %s' % url)
+    logging.error('get_soup returned None for URL: %s' % url)
 
 
 def find_tag(soup, tag, attrs=None):
