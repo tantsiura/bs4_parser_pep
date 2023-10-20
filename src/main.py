@@ -125,30 +125,28 @@ def pep(session):
 
         try:
             soup = get_soup(session, pep_url)
+            info = BeautifulSoup(
+                find_tag(soup, 'section', {'id': 'pep-content'})
+            )
+            info_table = info.find_by_tag_attr(
+                'class', 'rfc2822 field-list simple'
+            )
+            status_text_tag = info_table.find_by_tag_attr(
+                string=re.compile('Status')
+            ).parent
+            status_on_exact_page = status_text_tag.find_next_sibling().text
+            pep_statuses_dict[status_on_exact_page] += 1
+
+            if status_on_exact_page not in EXPECTED_STATUS[status_in_table]:
+                delayed_logger.add_message(
+                    f'''
+                    Несовпадающие статусы: {pep_url}
+                    Статус в карточке: {status_on_exact_page}
+                    '''
+                )
         except ConnectionError:
             delayed_logger.add_message(
                 GET_RESPONSE_LOG_ERROR.format(url=pep_url)
-            )
-            continue
-
-        info = BeautifulSoup(
-            find_tag(soup, 'section', {'id': 'pep-content'})
-        )
-        info_table = info.find_by_tag_attr(
-            'class', 'rfc2822 field-list simple'
-        )
-        status_text_tag = info_table.find_by_tag_attr(
-            string=re.compile('Status')
-        ).parent
-        status_on_exact_page = status_text_tag.find_next_sibling().text
-        pep_statuses_dict[status_on_exact_page] += 1
-
-        if status_on_exact_page not in EXPECTED_STATUS[status_in_table]:
-            delayed_logger.add_message(
-                f'''
-                Несовпадающие статусы: {pep_url}
-                Статус в карточке: {status_on_exact_page}
-                '''
             )
 
     delayed_logger.log(logging.warning)
